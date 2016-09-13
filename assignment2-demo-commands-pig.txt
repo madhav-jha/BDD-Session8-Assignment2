@@ -1,0 +1,58 @@
+emp = LOAD 'employee_details.txt' USING PigStorage(',') AS (emp_id:int, emp_name:chararray, emp_salary:int, emp_rating:int);
+emp_exp = LOAD 'employee_expenses.txt' AS (emp_id:int, emp_expend:int);
+
+1) Concat()
+
+emp = LOAD 'emp-details.txt' USING PigStorage(',') AS (emp_id:int, first_name:chararray, last_name:chararray, emp_salary:int, emp_rating:int);
+concat_name = FOREACH emp GENERATE CONCAT(first_name, '-', last_name);
+DUMP concat_name;
+
+2) Tokenize()
+
+tokennize_emp_name = FOREACH emp GENERATE TOKENIZE(emp_name);
+DUMP tokennize_emp_name;
+
+3) Sum()
+
+group_all_emp = GROUP emp ALL;
+sum_salary = FOREACH group_all_emp GENERATE (emp.emp_name, emp.emp_salary), SUM(emp.emp_salary);
+DUMP sum_salary;
+
+4) Min()
+
+group_all_emp = GROUP emp ALL;
+min_salary = FOREACH group_all_emp GENERATE (emp.emp_name, emp.emp_salary), MIN(emp.emp_salary);
+DUMP min_salary;
+
+5) Max()
+
+group_all_emp = GROUP emp ALL;
+max_salary = FOREACH group_all_emp GENERATE (emp.emp_name, emp.emp_salary), MAX(emp.emp_salary);
+DUMP max_salary;
+
+6) Limit
+
+five_emp = LIMIT emp 5;
+DUMP five_emp;
+
+7) Store
+
+STORE five_emp INTO 'five_emp';
+CAT five_emp/part-r-00000;
+
+8) Distinct
+
+uniq = DISTINCT emp;
+DUMP uniq;
+
+9) Flatten()
+
+rating = FOREACH emp GENERATE emp_name, FLATTEN(emp_rating) AS emp_rating;
+grouped_rating = GROUP rating BY emp_rating;
+DUMP grouped_rating;
+
+10) IsEmpty()
+
+cogrouped = COGROUP emp BY emp_id, emp_exp BY emp_id; 
+is_empty = FILTER cogrouped BY IsEmpty(emp_exp);
+DUMP is_empty;
